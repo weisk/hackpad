@@ -73,7 +73,6 @@ function getBytes(bucketName, keyName) {
   }
 }
 
-var AWS_REGION = 'us-east-1';
 var AWS_SERVICE = 's3';
 var AWS_REQUEST = 'aws4_request';
 /**
@@ -102,7 +101,7 @@ function _getS3Policy(domain, localPadId, userId, expirationDate, utcDateStr) {
       {"x-amz-credential":
           appjet.config.awsUser + "/" +
           utcDateStr + "/" +
-          AWS_REGION + "/" +
+          appjet.config.s3Region + "/" +
           AWS_SERVICE + "/" +
           AWS_REQUEST
       },
@@ -123,8 +122,8 @@ function getS3PolicyAndSig(domain, localPadId, userId) {
   var expirationDate = new Date();
   expirationDate.setDate(expirationDate.getDate() + 1);
 
-  function pad(n) { return n < 10 ? '0' + n : n }
-  var utcDateStr = expirationDate.getUTCFullYear() +
+  function pad(n) { return n < 10 ? '0' + n.toString() : n.toString() }
+  var utcDateStr = pad(expirationDate.getUTCFullYear()) +
       pad(expirationDate.getUTCMonth() + 1) +
       pad(expirationDate.getUTCDate());
 
@@ -135,7 +134,7 @@ function getS3PolicyAndSig(domain, localPadId, userId) {
   var awsSecretKey = new java.lang.String("AWS4" + AWSSecretAccessKey).getBytes("UTF8");
 
   var dateKey = crypto.signString(awsSecretKey, utcDateStr);
-  var dateRegionKey = crypto.signString(dateKey, AWS_REGION);
+  var dateRegionKey = crypto.signString(dateKey, appjet.config.s3Region);
   var dateRegionServiceKey = crypto.signString(dateRegionKey, AWS_SERVICE);
   var signingKey = crypto.signString(dateRegionServiceKey, AWS_REQUEST);
   var signature = crypto.signString(signingKey, s3Policy);
